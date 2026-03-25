@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button, Container, Divider, Form, Icon } from "semantic-ui-react";
 import MenuSistema from "../../MenuSistema";
 import { Link } from "react-router-dom";
+import { notifyError, notifySuccess } from '../../views/util/Util';
 
 export default function FormEntregador() {
   const [nome, setNome] = useState();
@@ -67,10 +68,10 @@ export default function FormEntregador() {
     axios
       .post("http://localhost:8080/api/entregador", entregadorRequest)
       .then((response) => {
-        console.log("Entregador cadastrado com sucesso.");
+        notifySuccess("Entregador cadastrado com sucesso.");
       })
       .catch((error) => {
-        console.log("Erro ao incluir o um entregador.");
+        notifyError("Erro ao incluir o um entregador.");
       });
   }
 

@@ -4,6 +4,7 @@ import MenuSistema from "../../MenuSistema";
 import React, { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { notifyError, notifySuccess } from '../../views/util/Util';
 
 export default function FormCliente() {
   const [nome, setNome] = useState();
@@ -24,10 +25,10 @@ export default function FormCliente() {
     axios
       .post("http://localhost:8080/api/cliente", clienteRequest)
       .then((response) => {
-        console.log("Cliente cadastrado com sucesso.");
+        notifySuccess("Cliente cadastrado com sucesso.");
       })
       .catch((error) => {
-        console.log("Erro ao incluir o um cliente.");
+        notifyError("Erro ao incluir o um cliente.");
       });
   }
 
