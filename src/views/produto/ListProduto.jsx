@@ -47,6 +47,7 @@ return(
                                <Table.Row>
                                    <Table.HeaderCell>Título</Table.HeaderCell>
                                    <Table.HeaderCell>Código</Table.HeaderCell>
+                                   <Table.HeaderCell>Categoria</Table.HeaderCell>
                                    <Table.HeaderCell>Descrição</Table.HeaderCell>
                                    <Table.HeaderCell>Valor Unitárior</Table.HeaderCell>
                                    <Table.HeaderCell>Tempo de Entrega Mínimo em Minutos</Table.HeaderCell>
@@ -62,6 +63,7 @@ return(
                                    <Table.Row key={produto.id}>
                                        <Table.Cell>{produto.titulo}</Table.Cell>
                                        <Table.Cell>{produto.codigo}</Table.Cell>
+                                       <Table.Cell>{produto.categoria?.descricao}</Table.Cell>
                                        <Table.Cell>{produto.descricao}</Table.Cell>
                                        <Table.Cell>{produto.valorUnitario}</Table.Cell>
                                        <Table.Cell>{produto.tempoEntregaMinimo}</Table.Cell>

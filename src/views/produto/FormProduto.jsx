@@ -10,9 +10,13 @@ export default function FormProduto() {
   const [valorUnitario, setValorUnitario] = useState();
   const [tempoEntregaMinimo, setTempoEntregaMinimo] = useState();
   const [tempoEntregaMaximo, setTempoEntregaMaximo] = useState();
+  const [listaCategoria] = useState([]);
+   const [idCategoria, setIdCategoria] = useState();
+
 
   function salvar() {
     let produtoRequest = {
+      idCategoria: idCategoria,
       codigo: codigo,
       titulo: titulo,
       descricao: descricao,
@@ -67,6 +71,17 @@ export default function FormProduto() {
                   onChange={(e) => setCodigo(e.target.value)}
                 ></Form.Input>
               </Form.Group>
+              <Form.Select
+                required
+                fluid
+                tabIndex="3"
+                placeholder="Selecione"
+                label="Categoria"
+                options={listaCategoria}
+                value={idCategoria}
+                onChange={(e, { value }) => setIdCategoria(value)}
+              />
+
               <Form.TextArea
                 fluid
                 label="Descrição"
