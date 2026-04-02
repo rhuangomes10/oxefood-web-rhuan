@@ -3,6 +3,7 @@ import MenuSistema from "../../MenuSistema";
 import React, { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { notifyError, notifySuccess } from '../../views/util/Util';
 export default function FormProduto() {
   const [codigo, setCodigo] = useState();
   const [titulo, setTitulo] = useState();
@@ -28,10 +29,10 @@ export default function FormProduto() {
     axios
       .post("http://localhost:8080/api/produto", produtoRequest)
       .then((response) => {
-        console.log("Produto cadastrado com sucesso.");
+        notifySuccess("Produto cadastrado com sucesso.");
       })
       .catch((error) => {
-        console.log("Erro ao incluir o um produto.");
+        notifyError("Erro ao incluir o um produto.");
       });
   }
 

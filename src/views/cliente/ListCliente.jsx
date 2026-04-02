@@ -1,12 +1,16 @@
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Container, Divider, Icon, Table } from 'semantic-ui-react';
+import { Button, Container, Divider, Icon, Table, Modal, Header } from 'semantic-ui-react';
 import MenuSistema from '../../MenuSistema';
+import { notifyError, notifySuccess } from '../../views/util/Util';
 
 export default function ListCliente () {
 
    const [lista, setLista] = useState([]);
+   const [openModal, setOpenModal] = useState(false);
+   const [idRemover, setIdRemover] = useState();
+
 
    useEffect(() => {
        carregarLista();
@@ -19,6 +23,7 @@ export default function ListCliente () {
            setLista(response.data)
        })
    }
+   //Formatação da data para formatação brasileira
 function formatarData(dataParam) {
 
        if (dataParam === null || dataParam === '' || dataParam === undefined) {
@@ -28,6 +33,31 @@ function formatarData(dataParam) {
        let arrayData = dataParam.split('-');
        return arrayData[2] + '/' + arrayData[1] + '/' + arrayData[0];
    }
+
+   async function remover() {
+
+       await axios.delete('http://localhost:8080/api/cliente/' + idRemover)
+       .then((response) => {
+ 
+           notifySuccess('Cliente removido com sucesso.')
+ 
+           axios.get("http://localhost:8080/api/cliente")
+           .then((response) => {
+               setLista(response.data)
+           })
+       })
+       .catch((error) => {
+           notifyError('Erro ao remover um cliente.')
+       })
+       setOpenModal(false)
+   }
+
+
+   function confirmaRemover(id) {
+       setOpenModal(true)
+       setIdRemover(id)
+   }
+
 return(
        <div>
            <MenuSistema tela={'cliente'} />
@@ -88,7 +118,8 @@ return(
                                                circular
                                                color='red'
                                                title='Clique aqui para remover este cliente'
-                                               icon>
+                                               icon 
+                                               onClick={e => confirmaRemover(cliente.id)}>
                                                    <Icon name='trash' />
                                            </Button>
 
@@ -101,6 +132,27 @@ return(
                    </div>
                </Container>
            </div>
+
+           <Modal
+               basic
+               onClose={() => setOpenModal(false)}
+               onOpen={() => setOpenModal(true)}
+               open={openModal}
+         >
+               <Header icon>
+                   <Icon name='trash' />
+                   <div style={{marginTop: '5%'}}> Tem certeza que deseja remover esse registro? </div>
+               </Header>
+               <Modal.Actions>
+                   <Button basic color='red' inverted onClick={() => setOpenModal(false)}>
+                       <Icon name='remove' /> Não
+                   </Button>
+                   <Button color='green' inverted onClick={() => remover()}>
+                       <Icon name='checkmark' /> Sim
+                   </Button>
+               </Modal.Actions>
+         </Modal>
+
 
        </div>
    )
