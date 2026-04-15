@@ -1,9 +1,9 @@
 import InputMask from "comigo-tech-react-input-mask";
 import { Button, Container, Divider, Form, Icon } from "semantic-ui-react";
 import MenuSistema from "../../MenuSistema";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { notifyError, notifySuccess } from '../../views/util/Util';
 
 export default function FormCliente() {
@@ -12,6 +12,24 @@ export default function FormCliente() {
   const [dataNascimento, setDataNascimento] = useState();
   const [foneCelular, setFoneCelular] = useState();
   const [foneFixo, setFoneFixo] = useState();
+
+  const { state } = useLocation();
+  const [idCliente, setIdCliente] = useState();
+
+  useEffect(() => {
+    if (state != null && state.id != null) {
+      axios.get("http://localhost:8080/api/cliente/" + state.id)
+        .then((response) => {
+          setIdCliente(response.data.id)
+          setNome(response.data.nome)
+          setCpf(response.data.cpf)
+          setDataNascimento(formatarData(response.data.dataNascimento))
+          setFoneCelular(response.data.foneCelular)
+          setFoneFixo(response.data.foneFixo)
+        })
+    }
+  }, [state])
+
 
   function salvar() {
     let clienteRequest = {
@@ -22,14 +40,26 @@ export default function FormCliente() {
       foneFixo: foneFixo,
     };
 
-    axios
-      .post("http://localhost:8080/api/cliente", clienteRequest)
-      .then((response) => {
-        notifySuccess("Cliente cadastrado com sucesso.");
-      })
-      .catch((error) => {
-        notifyError("Erro ao incluir o um cliente.");
-      });
+    if (idCliente != null) { //Alteração:
+      axios.put("http://localhost:8080/api/cliente/" + idCliente, clienteRequest)
+        .then((response) => { notifySuccess('Cliente alterado com sucesso.') })
+        .catch((error) => { notifyError('Erro ao alterar o cliente.') })
+    } else { //Cadastro:
+      axios.post("http://localhost:8080/api/cliente", clienteRequest)
+        .then((response) => { notifySuccess('Cliente cadastrado com sucesso.') })
+        .catch((error) => { notifyError('Erro ao incluir o cliente.') })
+    }
+
+  }
+
+  function formatarData(dataParam) {
+
+    if (dataParam === null || dataParam === '' || dataParam === undefined) {
+      return ''
+    }
+
+    let arrayData = dataParam.split('-');
+    return arrayData[2] + '/' + arrayData[1] + '/' + arrayData[0];
   }
 
   return (
@@ -38,15 +68,14 @@ export default function FormCliente() {
 
       <div style={{ marginTop: "3%" }}>
         <Container textAlign="justified">
-          <h2>
-            {" "}
-            <span style={{ color: "darkgray" }}>
-              {" "}
-              Cliente &nbsp;
-              <Icon name="angle double right" size="small" />{" "}
-            </span>{" "}
-            Cadastro{" "}
-          </h2>
+
+
+          {idCliente === undefined &&
+            <h2> <span style={{ color: 'darkgray' }}> Cliente &nbsp;<Icon name='angle double right' size="small" /> </span> Cadastro</h2>
+          }
+          {idCliente != undefined &&
+            <h2> <span style={{ color: 'darkgray' }}> Cliente &nbsp;<Icon name='angle double right' size="small" /> </span> Alteração</h2>
+          }
 
           <Divider />
 
