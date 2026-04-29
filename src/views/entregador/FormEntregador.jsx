@@ -3,7 +3,7 @@ import InputMask from "comigo-tech-react-input-mask";
 import { useState, useEffect } from "react";
 import { Button, Container, Divider, Form, Icon } from "semantic-ui-react";
 import MenuSistema from "../../MenuSistema";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { notifyError, notifySuccess } from '../../views/util/Util';
 
 export default function FormEntregador() {
@@ -23,21 +23,53 @@ export default function FormEntregador() {
   const [enderecoComplemento, setEnderecoComplemento] = useState();
   const [ativo, setAtivo] = useState();
   const [rg, setRg] = useState();
-
   const [estados, setEstados] = useState([]);
+  const [idEntregador, setIdEntregador] = useState();
+
+  const { state } = useLocation();
+
+  function formatarData(dataParam) {
+
+    if (dataParam === null || dataParam === '' || dataParam === undefined) {
+      return ''
+    }
+
+    let arrayData = dataParam.split('-');
+    return arrayData[2] + '/' + arrayData[1] + '/' + arrayData[0];
+  }
 
   useEffect(() => {
-    axios
-      .get(
-        "https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome",
-      )
+    axios.get("https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome")
       .then((response) => {
         setEstados(response.data);
+
+        if (state != null && state.id != null) {
+          axios.get("http://localhost:8080/api/entregador/" + state.id)
+            .then((response) => {
+              setIdEntregador(response.data.id);
+              setNome(response.data.nome);
+              setCpf(response.data.cpf);
+              setDataNascimento(formatarData(response.data.dataNascimento))
+              setFoneCelular(response.data.foneCelular);
+              setFoneFixo(response.data.foneFixo);
+              setQtdEntregasRealizadas(response.data.qtdEntregasRealizadas);
+              setValorFrete(response.data.valorFrete);
+              setEnderecoRua(response.data.enderecoRua);
+              setEnderecoNumero(response.data.enderecoNumero);
+              setEnderecoBairro(response.data.enderecoBairro);
+              setEnderecoCidade(response.data.enderecoCidade);
+              setEnderecoCep(response.data.enderecoCep);
+              setEnderecoUf(response.data.enderecoUf);
+              setEnderecoComplemento(response.data.enderecoComplemento);
+              setAtivo(response.data.ativo);
+              setRg(response.data.rg);
+            });
+        }
       })
       .catch((error) => {
-        console.error("Erro ao acessar estados.");
+        notifyError("Erro ao acessar estados.");
       });
-  }, []);
+  }, [state]);
 
   const estadosOptions = estados.map((estado) => ({
     key: estado.id,
@@ -47,32 +79,21 @@ export default function FormEntregador() {
 
   function salvar() {
     let entregadorRequest = {
-      nome: nome,
-      cpf: cpf,
-      dataNascimento: dataNascimento,
-      foneCelular: foneCelular,
-      foneFixo: foneFixo,
-      qtdEntregasRealizadas: qtdEntregasRealizadas,
-      valorFrete: valorFrete,
-      enderecoRua: enderecoRua,
-      enderecoNumero: enderecoNumero,
-      enderecoBairro: enderecoBairro,
-      enderecoCidade: enderecoCidade,
-      enderecoCep: enderecoCep,
-      enderecoUf: enderecoUf,
-      enderecoComplemento: enderecoComplemento,
-      ativo: ativo,
-      rg: rg,
+      nome, cpf, dataNascimento, foneCelular, foneFixo,
+      qtdEntregasRealizadas, valorFrete, enderecoRua, enderecoNumero,
+      enderecoBairro, enderecoCidade, enderecoCep, enderecoUf,
+      enderecoComplemento, ativo, rg,
     };
 
-    axios
-      .post("http://localhost:8080/api/entregador", entregadorRequest)
-      .then((response) => {
-        notifySuccess("Entregador cadastrado com sucesso.");
-      })
-      .catch((error) => {
-        notifyError("Erro ao incluir o um entregador.");
-      });
+    if (idEntregador != null) { // Alteração:
+      axios.put("http://localhost:8080/api/entregador/" + idEntregador, entregadorRequest)
+        .then(() => { notifySuccess("Entregador alterado com sucesso.") })
+        .catch(() => { notifyError("Erro ao alterar o entregador.") });
+    } else { // Cadastro:
+      axios.post("http://localhost:8080/api/entregador", entregadorRequest)
+        .then(() => { notifySuccess("Entregador cadastrado com sucesso.") })
+        .catch(() => { notifyError("Erro ao incluir o entregador.") });
+    }
   }
 
   return (
@@ -80,13 +101,13 @@ export default function FormEntregador() {
       <MenuSistema tela={"form-entregador"} />
       <div style={{ marginTop: "3%" }}>
         <Container textAlign="justified">
-          <h2>
-            <span style={{ color: "darkgray" }}>
-              Entregador &nbsp;
-              <Icon name="angle double right" size="small" />
-            </span>
-            Cadastro
-          </h2>
+
+          {idEntregador === undefined &&
+            <h2><span style={{ color: "darkgray" }}>Entregador &nbsp;<Icon name="angle double right" size="small" /></span> Cadastro</h2>
+          }
+          {idEntregador != undefined &&
+            <h2><span style={{ color: "darkgray" }}>Entregador &nbsp;<Icon name="angle double right" size="small" /></span> Alteração</h2>
+          }
           <Divider />
           <div style={{ marginTop: "4%" }}>
             <Form>
