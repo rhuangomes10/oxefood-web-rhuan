@@ -9,6 +9,9 @@ import {
   Table,
   Modal,
   Header,
+  Menu,
+  Segment,
+  Form
 } from "semantic-ui-react";
 import MenuSistema from "../../MenuSistema";
 import { notifyError, notifySuccess } from "../../views/util/Util";
@@ -17,6 +20,9 @@ export default function ListCliente() {
   const [lista, setLista] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [idRemover, setIdRemover] = useState();
+  const [menuFiltro, setMenuFiltro] = useState();
+  const [nome, setNome] = useState();
+  const [cpf, setCpf] = useState();
 
   useEffect(() => {
     carregarLista();
@@ -58,6 +64,46 @@ export default function ListCliente() {
     setIdRemover(id);
   }
 
+  function handleMenuFiltro() {
+
+    if (menuFiltro === true) {
+      setMenuFiltro(false);
+    } else {
+      setMenuFiltro(true);
+    }
+  }
+
+  function handleChangeNome(value) {
+
+    filtrarClientes(value, cpf);
+  }
+
+  function handleChangeCpf(value) {
+
+    filtrarClientes(nome, value);
+  }
+
+  async function filtrarClientes(nomeParam, cpfParam) {
+
+    let formData = new FormData();
+
+    if (nomeParam !== undefined) {
+      setNome(nomeParam)
+      formData.append('nome', nomeParam);
+    }
+    if (cpfParam !== undefined) {
+      setCpf(cpfParam)
+      formData.append('cpf', cpfParam);
+    }
+
+    await axios.post("http://localhost:8080/api/cliente/filtrar", formData)
+      .then((response) => {
+        setLista(response.data)
+      })
+  }
+
+
+
   return (
     <div>
       <MenuSistema tela={"cliente"} />
@@ -67,6 +113,43 @@ export default function ListCliente() {
           <Divider />
 
           <div style={{ marginTop: "4%" }}>
+            <Menu compact>
+              <Menu.Item
+                name='menuFiltro'
+                active={menuFiltro === true}
+                onClick={() => handleMenuFiltro()}
+              >
+                <Icon name='filter' />
+                Filtrar
+              </Menu.Item>
+            </Menu>
+            {menuFiltro ?
+
+              <Segment>
+                <Form className="form-filtros">
+
+                  <Form.Group widths='equal'>
+                    <Form.Input
+                      icon="search"
+                      value={nome}
+                      onChange={e => handleChangeNome(e.target.value)}
+                      label='Nome'
+                      placeholder='Filtrar por Nome'
+                      labelPosition='left'
+                    />
+                    <Form.Input
+                    icon="search"
+                      placeholder='Filtrar por Cpf'
+                      label='Cpf'
+                      value={cpf}
+                      onChange={(e, { value }) => {handleChangeCpf(value)}}
+                    />
+
+                  </Form.Group>
+                </Form>
+              </Segment> : ""
+            }
+
             <Button
               label="Novo"
               circular
@@ -140,7 +223,7 @@ export default function ListCliente() {
                       >
                         <Link
                           to="/form-endereco-cliente"
-                          state={{ idCliente: cliente.id}}
+                          state={{ idCliente: cliente.id }}
                         >
                           <Icon name="plus" />
                         </Link>
